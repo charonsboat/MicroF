@@ -13,26 +13,25 @@ printf "Installing Server Tools..."
 # installing server tools
 apt-get install -y git
 
-printf "Downloading and Installing RabbitMQ..."
-# download and add rabbitmq signing key
-wget https://www.rabbitmq.com/rabbitmq-signing-key-public.asc
-apt-key add rabbitmq-signing-key-public.asc
-
-# set package url for rabbitmq
-deb http://www.rabbitmq.com/debian/ stable main
-
-# update box after adding rabbitmq signing key
-apt-get update
-
-# run install of rabbitmq server
-apt-get install -y rabbitmq-server
-
 printf "Installing Docker..."
 # download and install docker package
 wget -qO- https://get.docker.com/ | sh
 
 # add vagrant user to the docker group
 usermod -aG docker vagrant
+
+printf "Downloading and Running the NSQ Docker Image..."
+# pull down the image
+docker pull nsqio/nsq
+
+# store host IP for Docker
+dockerHostIP=$(ifconfig docker0 | grep 'inet addr' | grep -Eo '([0-9]{1,3}[\.]){3}[0-9]{1,3}' | head -1)
+
+# run the nsqlookupd server
+docker run -d --name nsqlookupd -p 4160:4160 -p 4161:4161 nsqio/nsq /nsqlookupd
+
+# run the nsqd server
+docker run -d --name nsqd -p 4150:4150 -p 4151:4151 nsqio/nsq /nsqd --broadcast-address=$dockerHostIP --lookupd-tcp-address=$dockerHostIP
 
 printf "Making sure ownership rights are correct in vagrant user directory..."
 # make sure everything in the vagrant directory is owned by vagrant
