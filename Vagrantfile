@@ -15,7 +15,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.box = "ubuntu/trusty64"
 
     # host to guest port forwarding
-    config.vm.network :forwarded_port, guest: 1337, host: 1337
+    config.vm.network :forwarded_port, guest: 80, host: 1338
 
     if PROVIDER == "virtualbox"
         # settings for VirtualBox provider
